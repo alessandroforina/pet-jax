@@ -18,7 +18,7 @@ pip install "flax<0.12" --break-system-packages
 pip install jax==0.9.2 jaxlib==0.9.2 jax-cuda12-pjrt==0.9.2 jax-cuda12-plugin==0.9.2 --break-system-package
 pip install nvidia-cudnn-cu12==9.8.0.87 --break-system-packages
 ```
-and before running the job it may be useful to export:
+Before running the job it may be useful to export:
 ```bash
 export LD_LIBRARY_PATH=$(python -c "
 import os, nvidia
