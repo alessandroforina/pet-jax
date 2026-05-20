@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pet-jax"
+version = "0.1.0"
+requires-python = ">=3.11"
+license = "BSD-3-Clause"
+dependencies = [
+    "ase",
+    "e3x",
+    "flax",
+    "ipi",
+    "jax",
+    "jax-pme @ git+https://github.com/lab-cosmo/jax-pme.git",
+    "marathon-train[grain]",
+    "opsis",
+    "optax",
+]
+
+[project.scripts]
+pet-install-ipi-driver = "pet._install_ipi_driver:install_ipi_driver"
+pet-train = "pet.train:main"
+
+[tool.pytest.ini_options]
+python_files = ["*.py"]
+testpaths = ["tests"]
+addopts = [
+    "--import-mode=append",
+    "-p", "no:jaxtyping",
+]
+filterwarnings = ["error"]
+
+[tool.ruff]
+line-length = 92
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "UP",
+    "I",
+]
+ignore = ["E741", "E731", "E402", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/{tests,docs,examples}/*" = ["D1"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["pet"]
+section-order = ["numpy", "jax", "future", "standard-library", "third-party", "first-party", "local-folder"]
+no-lines-before = ["jax", "numpy"]
+
+[tool.ruff.lint.isort.sections]
+"numpy" = ["numpy"]
+"jax" = ["jax", "jax.numpy"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.setuptools.packages.find]
+where = ["src"]

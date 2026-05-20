@@ -1,0 +1,28 @@
+train: "my_project/train"
+valid: "my_project/valid"
+
+seed: 0
+
+batcher:
+  batch_size: 4
+  size_strategy: powers_of_4
+  fine_strategy: powers_of_2
+  coarse_strategy: powers_of_8
+
+loss_weights:
+  energy: 0.5
+  forces: 0.5
+
+optimizer: adam
+start_learning_rate: 1.0e-3
+min_learning_rate: 1.0e-6
+
+max_epochs: 2000
+valid_every_epoch: 2
+
+decay_style: linear
+start_decay_after: 10
+
+use_wandb: false
+benchmark_pipeline: true
+worker_count: 4

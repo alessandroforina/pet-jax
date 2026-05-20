@@ -1,0 +1,17 @@
+model:
+  pet.LongRangePET:
+    cutoff: 5.0
+    lr: false
+    num_hidden: 128
+    num_hidden_feedforward: 256
+    num_attention_layers: 2
+    num_message_passing_layers: 2
+    num_heads: 4
+    cutoff_width: 0.2
+
+baseline:
+  elemental:
+    1: -3.7
+    6: -8.9
+    7: -7.6
+    8: -7.0
