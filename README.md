@@ -11,7 +11,12 @@ Requires Python >= 3.11.
 ```bash
 pip install .
 ```
+On Kuma cluster it may be needed to execute the following commands due to compatibility issues that may arise with newest version of jax.
 
+```bash
+pip install "flax<0.12" --break-system-packages
+pip install jax==0.9.2 jaxlib==0.9.2 jax-cuda12-pjrt==0.9.2 jax-cuda12-plugin==0.9.2 --break-system-package
+```
 ## Usage
 
 ### ASE calculator
