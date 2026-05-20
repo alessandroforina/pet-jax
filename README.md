@@ -16,6 +16,18 @@ On Kuma cluster it may be needed to execute the following commands due to compat
 ```bash
 pip install "flax<0.12" --break-system-packages
 pip install jax==0.9.2 jaxlib==0.9.2 jax-cuda12-pjrt==0.9.2 jax-cuda12-plugin==0.9.2 --break-system-package
+pip install nvidia-cudnn-cu12==9.8.0.87 --break-system-packages
+```
+and before running the job it may be useful to export:
+```bash
+export LD_LIBRARY_PATH=$(python -c "
+import os, nvidia
+base = os.path.dirname(nvidia.__file__)
+libs = [os.path.join(base, d, 'lib') for d in os.listdir(base) if os.path.exists(os.path.join(base, d, 'lib'))]
+print(':'.join(libs))
+"):$CUDA_HOME/extras/CUPTI/lib64:$LD_LIBRARY_PATH
+export OMP_NUM_THREADS=1
+python -c "import jax; print(jax.devices())"
 ```
 ## Usage
 
