@@ -148,6 +148,7 @@ class LRModule(nn.Module):
             central_tokens,
             atom_mask,
         )
+        self.sow('intermediates', 'pseudo_charges', charges)
 
         prefactor = jnp.exp(
             self.param(

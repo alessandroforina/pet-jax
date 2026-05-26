@@ -37,10 +37,13 @@ class Calculator(BaseCalculator):
         add_offset=True,
         lr_wavelength=None,
         smearing=None,
+        model=None,
+        print_charges=False,
     ):
         self.params = params
         self.cutoff = cutoff
         self.add_offset = add_offset
+        self.print_charges = print_charges
 
         # jaxpme Ewald parameters: derived from cutoff if not given
         self.lr_wavelength = lr_wavelength if lr_wavelength is not None else cutoff / 8.0
@@ -52,6 +55,11 @@ class Calculator(BaseCalculator):
         predict_fn = lambda params, batch: pred_fn(params, batch, stress=stress)
         self.predict_fn = jax.jit(predict_fn)
         self.species_weights = species_weights
+
+        if model is not None and getattr(model, 'lr', False):
+            self._charges_fn = jax.jit(model.compute_pseudo_charges)
+        else:
+            self._charges_fn = None
 
         self.atoms = None
         self.batch = None
@@ -68,7 +76,7 @@ class Calculator(BaseCalculator):
         if species_weights is None:
             species_weights = {}
             kwargs.setdefault("add_offset", False)
-        return cls(model.predict, species_weights, params, model.cutoff, **kwargs)
+        return cls(model.predict, species_weights, params, model.cutoff, model=model, **kwargs)
 
     @classmethod
     def from_checkpoint(cls, folder, **kwargs):
@@ -93,7 +101,7 @@ class Calculator(BaseCalculator):
 
         params = read_msgpack(folder / "model/model.msgpack")
 
-        return cls(model.predict, species_to_weight, params, model.cutoff, **kwargs)
+        return cls(model.predict, species_to_weight, params, model.cutoff, model=model, **kwargs)
 
     def update(self, atoms):
         changes = compare_atoms(self.atoms, atoms)
@@ -141,6 +149,19 @@ class Calculator(BaseCalculator):
                 from ase.stress import full_3x3_to_voigt_6_stress
 
                 actual_results[key] = full_3x3_to_voigt_6_stress(virial / volume)
+
+        if self._charges_fn is not None and self.print_charges:
+            from ase.data import chemical_symbols
+
+            charges = np.array(self._charges_fn(self.params, self.batch))
+            atomic_numbers = atoms.get_atomic_numbers()
+            num_charges = charges.shape[1]
+            print("Ewald pseudo-charges:")
+            charge_headers = "  ".join(f"{'ch'+str(k):>12}" for k in range(num_charges))
+            print(f"  {'#':>4}  {'Z':>2}  {charge_headers}")
+            for idx, (z, q) in enumerate(zip(atomic_numbers, charges)):
+                charge_values = "  ".join(f"{v:+12.6f}" for v in q)
+                print(f"  {idx:4d}  {chemical_symbols[z]:>2}  {charge_values}")
 
         if self.add_offset:
             energy_offset = np.sum(

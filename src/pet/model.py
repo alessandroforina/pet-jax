@@ -76,6 +76,25 @@ class LongRangePET(nn.Module):
 
         return predictions
 
+    def compute_pseudo_charges(self, params, batch):
+        """Return per-atom scalar pseudo-charges (shape: num_real_atoms x num_charges) used in Ewald.
+
+        Only meaningful when lr=True. Returns None otherwise.
+        """
+        if not self.lr:
+            return None
+        _, state = self.apply(
+            params,
+            batch.atomic_numbers,
+            batch.reverse,
+            batch.sr,
+            batch.nopbc,
+            batch.pbc,
+            mutable=['intermediates'],
+        )
+        charges = state['intermediates']['pseudo_charges'][0]  # (num_padded_atoms, num_charges)
+        return charges[batch.sr.atom_mask]  # (num_real_atoms, num_charges)
+
     def dummy_inputs(self):
         from ase.build import bulk
 
